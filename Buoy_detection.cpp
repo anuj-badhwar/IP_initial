@@ -11,59 +11,6 @@
 using namespace cv;
 using namespace std;
 
-//int main()
-//{
-   /* Mat detectedSquare;
-    detectedSquare = imread("check.jpg",1);
- cv::Mat hsv_img;
- cvtColor(detectedSquare,hsv_img,CV_BGR2HSV);
-    Vec3b pixel;
-    float totalPixel=0; // to count the total number of pixels in an image---to get the Percentage later
-    float totalClass[6];// because we want to test for 5 classes + a garbage class.{{ Class-0 -> Garbage, Class-1->Orange, Class-2->Green, Class-3->Red,
-                        //  Class-4->Blue, Class-5->Yellow }}
-
-    for(int i=0; i<hsv_img.rows; i++)
-    {
-        for (int j=0; j<hsv_img.cols; j++)
-        {
-
-            totalPixel++;
-            pixel= hsv_img.at<Vec3b>(i,j);
-
-           // if(  pixel[0]>0 &&  pixel[0]<1  )           totalClass[1]++;    // Class-1->Orange
-             if (  pixel[0]>50 &&  pixel[0]<65  )   totalClass[1]++;    // To check Green class-2 //svmResult==2 &&
-            else if (  pixel[0]>0 &&  pixel[0]<10  )        totalClass[2]++;    // Class-3->Red
-            //else if (  pixel[0]>100 &&  pixel[0]<115  )     totalClass[4]++;    // Class-4->Blue
-            else if (  pixel[0]>18 &&  pixel[0]<21  )       totalClass[3]++;    // Class-5->Yellow
-        }
-
-    }
-
-    float percentage[5];
-    totalClass[0]=0; //Putting zero to the Garbage class
-
-    for (int i=0; i<=5; i++)
-    {
-        percentage[i] = (totalClass[i] / totalPixel )*100;
-    }
-
-    float max=0;
-    int index =0;
-
-    for(int i=1;i<=3;i++)
-    {
-        if(max<percentage[i])
-        {
-            max=percentage[i];
-            index=i;
-        }
-    }
-
-    //cout<<"\n Organge: "<<percentage[1]<<"  Green: "<<percentage[2]<<"  Red: "<<percentage[3]<<"  Blue: "<<percentage[4]<<"  Yellow: "<<percentage[5]<<"\n \n";
-
-    cout<<"Index\t"<<index<<"\n\n\n";
- */
-
 int erosion_elem = 0;
 int erosion_size = 0;
 int dilation_elem = 0;
