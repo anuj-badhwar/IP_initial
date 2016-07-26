@@ -1,103 +1,89 @@
-#include <QCoreApplication>
+#include<opencv/cv.h>
+#include<iostream>
+#include<math.h>
+#include<opencv/highgui.h>
 #include<opencv2/highgui/highgui.hpp>
 #include<opencv2/core/core.hpp>
+#include<math.h>
 #include<opencv2/imgproc/imgproc.hpp>
-#include<opencv/ml.h>
-#include<opencv2/photo/photo.hpp>
-
-using namespace cv;
 using namespace std;
-cv::Mat image_clahe;
-int erosion_elem = 0;
-int erosion_size = 0;
-int dilation_elem = 0;
-int dilation_size = 0;
-
-void Erosion( int, void* )
+using namespace cv;
+#include <QCoreApplication>
+int main(int argc, char *argv[])
 {
-    Mat dst1;
-  int erosion_type;
-  namedWindow( "Erosion Demo", CV_WINDOW_AUTOSIZE );
-  if( erosion_elem == 0 ){ erosion_type = MORPH_RECT; }
-  else if( erosion_elem == 1 ){ erosion_type = MORPH_CROSS; }
-  else if( erosion_elem == 2) { erosion_type = MORPH_ELLIPSE; }
+    QCoreApplication a(argc, argv);
+    Mat src,dst, color_dst;
+//   VideoCapture cap;
+//    cap.open(0);
 
-  Mat element = getStructuringElement( erosion_type,
-                                       Size( 2*erosion_size + 1, 2*erosion_size+1 ),
-                                       Point( erosion_size, erosion_size ) );
+    double angle = 0;
+//    for(;;){
 
-  /// Apply the erosion operation
-  erode( image_clahe, image_clahe, element,Point(0,0),3000 );
- // fastNlMeansDenoisingColored( image_clahe, dst1, 3, 3, 7, 21 );
- // imshow( "Erosion Demo", dst1);
-  imwrite("/home/sukhad/main1.jpg",image_clahe);
+//    if(cap.isOpened())
+//        return 0;
+//    cap>>src;
+    src=imread("/home/sukhad/abcd.jpg");
+    resize(src,src,Size(640,480));
+       if(!src.data)
+            return -1;
+    u_int8_t* pixels = (uchar*)(src.data);
+
+ inRange(src, cv::Scalar(0, 0, 0), cv::Scalar(50, 50, 50), src);
+    Canny(src,dst, 50, 200, 3 );
+
+    vector<Point>Largest_contour;
+            double max_area=0;
+    vector<vector<Point> > contours;
+    findContours(dst,contours,CV_RETR_LIST,CV_CHAIN_APPROX_SIMPLE);
+              for(unsigned int i=0; i < contours.size(); i++)
+               {
+                   double area=contourArea(contours[i]);
+                   if(area>max_area)
+                   {
+                       max_area=area;
+                       Largest_contour=contours[i];
+                   }
+               }
+               vector<vector<Point> > tcontour;
+
+               tcontour.push_back(Largest_contour);
+                           drawContours(dst,tcontour,-1,Scalar(255,0,0),2);
+
+    cvtColor( dst,color_dst, CV_GRAY2BGR );
+
+   vector<Vec4i> lines;
+    HoughLinesP( dst, lines, 1, CV_PI/180,80, 60, 0 );
+     size_t i = 0;
+     int l,max=0,s,li;
+     for(i=0;i<lines.size();i++){
+            s=(lines[i][2]-lines[i][0])*(lines[i][2]-lines[i][0])+(lines[i][3]-lines[i][1])*(lines[i][3]-lines[i][1]);
+            l=sqrt(s);
+            if(l>max){
+                    max=l;
+                    li=i;
+            }
+        }
+
+
+
+        line( color_dst, Point(lines[li][0], lines[li][1]),
+            Point(lines[li][2], lines[li][3]), Scalar(0,0,255), 3, 8 );
+
+
+            angle = atan2((double)lines[li][3] - lines[li][1],
+                            (double)lines[li][2] - lines[li][0])-angle;
+
+    namedWindow( "Source", 1 );
+    imshow( "Source", dst );
+
+    namedWindow( "Detected Lines", 1 );
+    imshow( "Detected Lines", color_dst );
+
+    namedWindow("Source1",1);
+    imshow("Source1",src);
+    std::cout << angle * 180 / CV_PI << std::endl;
+    cv::waitKey(0);
+ //   }
+
+    return a.exec();
 }
-/** @function Dilation */
-void Dilation( int, void* )
-{
-  int dilation_type;
-  namedWindow( "Dilation Demo", CV_WINDOW_AUTOSIZE );
-  if( dilation_elem == 0 ){ dilation_type = MORPH_RECT; }
-  else if( dilation_elem == 1 ){ dilation_type = MORPH_CROSS; }
-  else if( dilation_elem == 2) { dilation_type = MORPH_ELLIPSE; }
-
-  Mat element = getStructuringElement( dilation_type,
-                                       Size( 2*dilation_size + 1, 2*dilation_size+1 ),
-                                       Point( dilation_size, dilation_size ) );
-  /// Apply the dilation operation
-  dilate( image_clahe, image_clahe, element,Point(0,0),3000 );
-  imshow( "Dilation Demo", image_clahe );
-}
-
-    int main(int argc, char** argv)
-    {
-        QCoreApplication a(argc, argv);
-        // READ RGB color image and convert it to Lab
-     /*   VideoCapture capture("/home/sukhad/abc.mp4");
-          if(!capture.isOpened()){
-            //error in opening the video input
-            cerr << "Unable to open video file: " ;
-            exit(EXIT_FAILURE);
-         }*/
-
-
-//for(;;){
-        cv::Mat bgr_image;
-        cv::Mat lab_image;
-        bgr_image=imread("/home/sukhad/YDXJ0119.jpg");
-            if(!bgr_image.data)
-                    return 0;
-            resize(bgr_image,bgr_image,Size(640,480));
-        cv::cvtColor(bgr_image, lab_image, CV_BGR2Lab);
-cv::Mat dst1;
-        // Extract the L channel
-        std::vector<cv::Mat> lab_planes(3);
-        cv::split(lab_image, lab_planes);  // now we have the L image in lab_planes[0]
-
-        // apply the CLAHE algorithm to the L channel
-        cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
-        clahe->setClipLimit(4);
-        cv::Mat dst;
-        clahe->apply(lab_planes[0], dst);
-
-        // Merge the the color planes back into an Lab image
-        dst.copyTo(lab_planes[0]);
-        cv::merge(lab_planes, lab_image);
-
-       // convert back to RGB
-       cv::cvtColor(lab_image, image_clahe, CV_Lab2BGR);
-       namedWindow( "image original", CV_WINDOW_AUTOSIZE );
-       namedWindow( "image CLAHE", CV_WINDOW_AUTOSIZE );
-
-
-       // display the results  (you might also want to see lab_planes[0] before and after).
-
-       Erosion( 0, 0 );
-         Dilation( 0, 0 );
-
-
-         imshow("image original", bgr_image);
-  imshow("image CLAHE", image_clahe);
-//}
-       return a.exec();
-    }
